@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiran Kumar H S - Software Developer & Entrepreneur</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for the body and smooth transitions */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            margin: 0;
+            padding: 0;
+            background-color: #1A1A1A; /* Default dark background */
+            color: #E0E0E0; /* Default light text */
+        }
+
+        /* 3D Canvas Styles */
+        #three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Place behind content */
+            opacity: 0.7; /* Subtle transparency */
+        }
+
+        /* Dark mode specific styles (default) */
+        .dark {
+            background-color: #1A1A1A; /* Very dark gray background */
+            color: #E0E0E0; /* Light text color */
+        }
+
+        .dark .section-heading {
+            color: #E0E0E0;
+        }
+
+        .dark .card {
+            background-color: rgba(34, 34, 34, 0.7); /* Semi-transparent darker card background */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle light border */
+        }
+
+        .dark .card-title {
+            color: #FFFFFF; /* White for titles in dark mode */
+        }
+
+        .dark .card-description {
+            color: #CBD5E0; /* Lighter gray for descriptions */
+        }
+
+        .dark .btn-primary {
+            background-color: #4F46E5; /* Indigo for primary button */
+            color: white;
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5); /* Subtle indigo glow */
+        }
+
+        .dark .btn-secondary {
+            background-color: #4B5563; /* Darker gray for secondary in dark mode */
+            color: #E0E0E0;
+        }
+
+        .dark .qr-code-placeholder {
+            background-color: #E0E0E0; /* Light background for QR in dark mode */
+            color: #1A202C; /* Dark text for QR in dark mode */
+        }
+
+        .dark .skill-item {
+            background-color: rgba(255, 255, 255, 0.1); /* Subtle light background for skills */
+            color: #E0E0E0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .skill-item:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Light mode specific styles (toggle will apply these) */
+        body.light {
+            background-color: #F0F2F5; /* Light gray background */
+            color: #333333; /* Dark text color */
+        }
+
+        .light .section-heading {
+            color: #333333;
+        }
+
+        .light .card {
+            background-color: #FFFFFF; /* White card background */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .light .card-title {
+            color: #1A202C;
+        }
+
+        .light .card-description {
+            color: #4A5568;
+        }
+
+        .light .btn-primary {
+            background-color: #4F46E5; /* Indigo for primary button in light mode */
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .light .btn-secondary {
+            background-color: #E2E8F0; /* Light gray for secondary in light mode */
+            color: #4A5568;
+        }
+
+        .light .qr-code-placeholder {
+            background-color: #1A202C; /* Dark background for QR in light mode */
+            color: #E0E0E0; /* Light text for QR in light mode */
+        }
+
+        .light .skill-item {
+            background-color: #E2E8F0;
+            color: #4A5568;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .light .skill-item:hover {
+            background-color: #CBD5E0;
+        }
+
+        /* General button transitions */
+        .btn-primary, .btn-secondary {
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.7); /* Enhanced glow on hover for indigo */
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Smooth scroll for navigation */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Hero section specific styles */
+        #hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative; /* Ensure content is above 3D background */
+            z-index: 1;
+            padding: 2rem; /* Ensure padding for smaller screens */
+            /* Removed background, blur, border, shadow from here */
+        }
+
+        /* New container for hero text and buttons to control width */
+        .hero-content-wrapper {
+            max-width: 800px;
+            margin: 0 auto; /* Center the content */
+            padding: 2rem; /* Add some padding for spacing */
+        }
+
+        .hero-name {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -0.05em;
+            color: #FFFFFF; /* Default white for hero name in dark mode */
+            /* Static glowing effect for 3D appearance (subtle white glow) */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Specific style for hero-name in light mode */
+        body.light .hero-name {
+            color: #1A1A1A; /* Dark gray for hero name in light mode */
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.2), 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle dark shadow */
+        }
+
+        .hero-tagline {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 300;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .hero-buttons .btn {
+            margin: 0.5rem;
+        }
+
+        /* QR code placeholder styling */
+        .qr-code-placeholder {
+            width: clamp(80px, 15vw, 120px);
+            height: clamp(80px, 15vw, 120px);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(0.7rem, 2vw, 1rem);
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Skills grid layout */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Ensure consistent padding for all sections */
+        section {
+            padding: 4rem 1rem; /* Default padding for sections */
+            position: relative; /* Ensure content is above 3D background */
+            z-index: 1;
+        }
+        @media (min-width: 768px) {
+            section {
+                padding: 6rem 2rem; /* Larger padding for tablets and desktops */
+            }
+        }
+        @media (min-width: 1024px) {
+            section {
+                padding: 8rem 4rem; /* Even larger padding for large desktops */
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #1A1A1A; /* Dark background for modal */
+            color: #E0E0E0;
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle light border */
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Specific modal content background/text for light mode */
+        body.light .modal-content {
+            background-color: #FFFFFF; /* White background for modal in light mode */
+            color: #333333;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #E0E0E0;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .modal-close-btn:hover {
+            color: #FFFFFF; /* White on hover */
+        }
+        /* Specific modal close button color for light mode */
+        body.light .modal-close-btn {
+            color: #333333;
+        }
+        body.light .modal-close-btn:hover {
+            color: #1A1A1A;
+        }
+
+
+        .modal-content h3 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #ffffff; /* Indigo for modal title */
+            margin-bottom: 1rem;
+        }
+
+        .modal-content p {
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .modal-content strong {
+            color: #ffffff; /* Indigo for strong text */
+        }
+
+        /* Styles for the new AI button */
+        .btn-ai-enhance {
+            background-color: #4F46E5; /* Indigo */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px; /* Full rounded */
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+        .btn-ai-enhance:hover {
+            background-color: #4338CA; /* Darker indigo */
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.5);
+        }
+        .btn-ai-enhance:disabled {
+            background-color: #6B7280; /* Gray out when disabled */
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Loading indicator for AI button */
+        .btn-ai-enhance .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 1.2rem;
+            height: 1.2rem;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="dark">
+    <canvas id="three-canvas"></canvas>
+
+    <button id="theme-toggle" class="fixed top-4 right-4 p-3 rounded-full shadow-lg z-50
+        bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100
+        hover:scale-105 transition-transform duration-200 ease-in-out">
+        <svg id="sun-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M2 12h1m15.364 6.364l-.707.707M6.343 6.343l-.707-.707m12.728 0l-.707-.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <svg id="moon-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
+
+    <section id="hero" class="relative card-title w-full text-center">
+        <div class="hero-content-wrapper">
+            <h1 class="hero-name">Kiran Kumar H S</h1>
+            <p class="hero-tagline">“Building tech that empowers people.”</p>
+            <div class="hero-buttons flex flex-col sm:flex-row justify-center items-center gap-4">
+                <a href="#projects" class="btn-primary px-8 py-3 rounded-full text-lg font-semibold shadow-lg">View Projects</a>
+                <a href="#contact" class="btn-secondary px-8 py-3 rounded-full text-lg font-semibold shadow-lg">Contact Me</a>
+            <!-- about me section -->
+                <a href="#about" class="btn-secondary px-8 py-3 rounded-full text-lg font-semibold shadow-lg">About Me</a>
+            </div>
+        </div>
+    </section>
+    <section id="about" class="container mx-auto max-w-4xl text-center bg-transparent">
+        <h2 class="section-heading text-4xl font-bold mb-8">About Me</h2>
+        <p class="text-lg leading-relaxed mb-4">
+            I'm Kiran Kumar H S, a passionate software developer, tech entrepreneur, and storyteller. My journey
+            revolves around harnessing technology to create meaningful impact. I thrive on solving complex problems
+            and crafting intuitive user experiences.
+        </p>
+        <p class="text-lg leading-relaxed mb-4">
+            Based in: <span class="font-semibold text-gray-300">Bengaluru | Mysuru | Remote</span>
+        </p>
+        <p class="text-lg leading-relaxed">
+            My interests span across: <span class="font-semibold text-gray-300">Kotlin Multiplatform,   AI, UI/UX.</span>
+            I believe in continuous learning and the power of collaboration to build innovative solutions.
+        </p>
+    </section>
+
+    <section id="projects" class="container mx-auto max-w-6xl bg-transparent">
+        <h2 class="section-heading text-4xl font-bold text-center mb-12">Featured Projects</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="card p-6 rounded-xl transition-transform duration-300 hover:scale-[1.02] cursor-pointer" data-project="riseright">
+                <h3 class="card-title text-2xl font-semibold mb-2">RiseRight</h3>
+                <p class="card-description text-base">Personal Finance Automation</p>
+                 <!--   click for more info -->
+                <p class="text-sm text-gray-400 mt-2">Click for more info</p>   
+            </div>
+            <div class="card p-6 rounded-xl transition-transform duration-300 hover:scale-[1.02] cursor-pointer" data-project="genzfinrush">
+                <h3 class="card-title text-2xl font-semibold mb-2">GenZ FinRush</h3>
+                <p class="card-description text-base">Where Money Meets Mindset</p>
+                <p class="text-sm text-gray-400 mt-2">Click for more info</p>
+            </div>
+            <div class="card p-6 rounded-xl transition-transform duration-300 hover:scale-[1.02] cursor-pointer" data-project="flowtime">
+                <h3 class="card-title text-2xl font-semibold mb-2">FlowTime</h3>
+                <p class="card-description text-base">Productivity & Wellness Toolkit</p>
+                <p class="text-sm text-gray-400 mt-2">Click for more info</p>
+            </div>
+            <div class="card p-6 rounded-xl transition-transform duration-300 hover:scale-[1.02] cursor-pointer" data-project="ren">
+                <h3 class="card-title text-2xl font-semibold mb-2">REN</h3>
+                <p class="card-description text-base">Rural Empowerment Network</p>
+                <p class="text-sm text-gray-400 mt-2">Click for more info</p>
+            </div>
+            <div class="card p-6 rounded-xl transition-transform duration-300 hover:scale-[1.02] cursor-pointer" data-project="devdaily">
+                <h3 class="card-title text-2xl font-semibold mb-2">Dev Daily Challenge</h3>
+                <p class="card-description text-base">Code. Learn. Repeat.</p>
+                <p class="text-sm text-gray-400 mt-2">Click for more info</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="container mx-auto max-w-4xl text-center bg-transparent">
+        <h2 class="section-heading text-4xl font-bold mb-8">Skills</h2>
+        <div class="mb-8">
+            <h3 class="text-2xl font-semibold mb-4 text-gray-300">Tech Stack</h3>
+            <div class="skills-grid">
+                <span class="skill-item px-4 py-2 rounded-lg">Kotlin</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Compose Multiplatform</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Android</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Firebase</span>
+                <span class="skill-item px-4 py-2 rounded-lg">AI/ML</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Git</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Web Development</span>
+            </div>
+        </div>
+        <div>
+            <h3 class="text-2xl font-semibold mb-4 text-gray-300">Soft Skills</h3>
+            <div class="skills-grid">
+                <span class="skill-item px-4 py-2 rounded-lg">Communication</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Leadership</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Storytelling</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Design Thinking</span>
+                <span class="skill-item px-4 py-2 rounded-lg">Problem Solving</span>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="contact" class="container mx-auto max-w-6xl text-center bg-transparent">
+        <!-- section-heading text-4xl font-bold text-center mb-12 -->
+        <h2 class="section-heading text-4xl font-bold mb-12">Get in Touch</h2>
+        <div class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16">
+            <div class="qr-code-container flex flex-col items-center">
+                <img src="instagram.png" alt="Instagram QR Code" class="w-full h-auto rounded-lg mb-4">
+                <span class="text-xl font-bold text-gray-300">Scan for instagram</span>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-800 text-gray-400 text-center py-8 relative z-10">
+        <p class="mb-2">Copyright &copy; 2025 Kiran Kumar H S</p>
+        <p class="text-sm">“Let’s build something impactful together.”</p>
+    </footer>
+
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h3 id="modal-project-title"></h3>
+            <p id="modal-project-description"></p>
+            <p><strong class="text-indigo-400">Tech:</strong> <span id="modal-project-tech"></span></p>
+            <p><strong class="text-indigo-400">Goal:</strong> <span id="modal-project-goal"></span></p>
+            <p><strong class="text-indigo-400">Status:</strong> <span id="modal-project-status"></span></p>
+            <p><strong class="text-indigo-400">Tools:</strong> <span id="modal-project-tools"></span></p>
+            <p><strong class="text-indigo-400">Followers Goal:</strong> <span id="modal-project-followers"></span></p>
+            <p><strong class="text-indigo-400">USP:</strong> <span id="modal-project-usp"></span></p>
+            <p><strong class="text-indigo-400">Built With:</strong> <span id="modal-project-builtwith"></span></p>
+            <p><strong class="text-indigo-400">Features:</strong> <span id="modal-project-features"></span></p>
+            <p><strong class="text-indigo-400">Purpose:</strong> <span id="modal-project-purpose"></span></p>
+            <p><strong class="text-indigo-400">Location:</strong> <span id="modal-project-location"></span></p>
+            <p><strong class="text-indigo-400">Activities:</strong> <span id="modal-project-activities"></span></p>
+            <p><strong class="text-indigo-400">Future:</strong> <span id="modal-project-future"></span></p>
+            <p><strong class="text-indigo-400">Format:</strong> <span id="modal-project-format"></span></p>
+            <p><strong class="text-indigo-400">Tech Focus:</strong> <span id="modal-project-techfocus"></span></p>
+
+        </div>
+    </div>
+
+    <script>
+        // THREE.js Scene Setup
+        let scene, camera, renderer, grid, particles;
+        const canvas = document.getElementById('three-canvas');
+
+        function initThreeJS() {
+            // Scene
+            scene = new THREE.Scene();
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 5, 15); // Slightly elevated and pulled back
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft ambient light
+            scene.add(ambientLight);
+
+            // Changed light colors from neon to more neutral/subtle
+            const pointLight = new THREE.PointLight(0xAAAAAA, 10, 100); // Light gray point light
+            pointLight.position.set(5, 10, 5);
+            scene.add(pointLight);
+
+            const pointLight2 = new THREE.PointLight(0xCCCCCC, 8, 100); // Another light gray light
+            pointLight2.position.set(-5, -10, -5);
+            scene.add(pointLight2);
+
+            // Grid (floating)
+            const gridSize = 50;
+            const divisions = 50;
+            // Changed grid color from neon to a darker gray
+            const gridHelper = new THREE.GridHelper(gridSize, divisions, 0x888888, 0x303030); // Medium gray lines
+            gridHelper.material.opacity = 0.3;
+            gridHelper.material.transparent = true;
+            gridHelper.position.y = -5; // Position it below the content
+            scene.add(gridHelper);
+
+            // Particles (floating glow)
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleCount = 1000;
+            const posArray = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 100; // Spread particles in a large cube
+            }
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+            // Changed particle color from neon to a light gray
+            const particleMaterial = new THREE.PointsMaterial({
+                color: 0xCCCCCC, // Light gray color
+                size: 0.2,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending // For glowing effect
+            });
+            particles = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particles);
+
+            // Animation loop
+            animateThreeJS();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function animateThreeJS() {
+            requestAnimationFrame(animateThreeJS);
+
+            // Subtle camera rotation
+            camera.position.x = Math.sin(Date.now() * 0.00005) * 15;
+            camera.position.z = Math.cos(Date.now() * 0.00005) * 15;
+            camera.lookAt(scene.position); // Always look at the center
+
+            // Rotate grid and particles
+            if (grid) grid.rotation.y += 0.0005;
+            if (particles) particles.rotation.y += 0.0008;
+            if (particles) particles.position.y = Math.sin(Date.now() * 0.0005) * 2; // Subtle up/down float
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Initialize Three.js when the window loads
+        window.onload = initThreeJS;
+
+        // --- Light/Dark Mode Toggle ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const body = document.body;
+
+        // Check for saved theme preference or default to system preference
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'light') { // If explicitly set to light
+            body.classList.remove('dark');
+            body.classList.add('light');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        } else if (currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            // If explicitly set to dark, or no preference and system is dark
+            body.classList.add('dark');
+            body.classList.remove('light');
+            moonIcon.classList.remove('hidden');
+            sunIcon.classList.add('hidden');
+        } else { // Default to light if no preference and system is light
+            body.classList.remove('dark');
+            body.classList.add('light');
+            sunIcon.classList.remove('hidden');
+            moonIcon.classList.add('hidden');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                localStorage.setItem('theme', 'light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                moonIcon.classList.remove('hidden');
+                sunIcon.classList.add('hidden');
+            }
+        });
+
+        // --- Smooth scrolling for navigation buttons ---
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // --- Project Modal Logic ---
+        const projectModal = document.getElementById('project-modal');
+        const modalCloseBtn = document.querySelector('.modal-close-btn');
+        const projectCards = document.querySelectorAll('.card[data-project]');
+        // const enhanceDescriptionBtn = document.getElementById('enhance-description-btn');
+        const modalProjectDescription = document.getElementById('modal-project-description');
+
+        const projectDetails = {
+            riseright: {
+                title: "RiseRight – Personal Finance Automation",
+                description: "A smart AI tool that analyzes spending patterns and provides actionable insights for better budgeting. Built using Kotlin Multiplatform with blockchain-based privacy for Gen Z users.",
+                tech: "Kotlin, Firebase, Compose",
+                goal: "Help users gain emotional and financial clarity",
+                status: "Beta Testing (2025)",
+                tools: "N/A", // Not applicable for this project
+                followers: "N/A",
+                usp: "N/A",
+                builtwith: "N/A",
+                features: "N/A",
+                purpose: "N/A",
+                location: "N/A",
+                activities: "N/A",
+                future: "N/A",
+                format: "N/A",
+                techfocus: "N/A"
+            },
+            genzfinrush: {
+                title: "GenZ FinRush – Where Money Meets Mindset",
+                description: "A storytelling-based Instagram-first content platform designed to empower young minds with financial wisdom. Features reels, interviews, and motion design.",
+                tech: "N/A",
+                goal: "N/A",
+                status: "N/A",
+                tools: "Canva, After Effects, ChatGPT, Notion",
+                followers: "100K in 90 days",
+                usp: "Bite-sized emotional-finance content",
+                builtwith: "N/A",
+                features: "N/A",
+                purpose: "N/A",
+                location: "N/A",
+                activities: "N/A",
+                future: "N/A",
+                format: "N/A",
+                techfocus: "N/A"
+            },
+            flowtime: {
+                title: "FlowTime – Productivity & Wellness Toolkit",
+                description: "A local-first mobile app for mindful routines, time-blocking, and mental wellness. No cloud dependency.",
+                tech: "N/A",
+                goal: "N/A",
+                status: "N/A",
+                tools: "N/A",
+                followers: "N/A",
+                usp: "N/A",
+                builtwith: "Kotlin, Jetpack Compose, Room DB",
+                features: "Mood tracking, routine builder, Pomodoro timer",
+                purpose: "Empower users to reclaim focus",
+                location: "N/A",
+                activities: "N/A",
+                future: "N/A",
+                format: "N/A",
+                techfocus: "N/A"
+            },
+            ren: {
+                title: "REN – Rural Empowerment Network",
+                description: "A social-tech initiative to promote digital literacy and entrepreneurship in rural Karnataka.",
+                tech: "N/A",
+                goal: "N/A",
+                status: "N/A",
+                tools: "N/A",
+                followers: "N/A",
+                usp: "N/A",
+                builtwith: "N/A",
+                features: "N/A",
+                purpose: "N/A",
+                location: "Periyapatna & nearby villages",
+                activities: "Workshops, mentorship, digital tools",
+                future: "AgriTech + EdTech integrations",
+                format: "N/A",
+                techfocus: "N/A"
+            },
+            devdaily: {
+                title: "Dev Daily Challenge – Code. Learn. Repeat.",
+                description: "A daily challenge platform for self-taught developers to build, share, and learn 100+ mini projects.",
+                tech: "N/A",
+                goal: "Build coding confidence via consistency",
+                status: "N/A",
+                tools: "N/A",
+                followers: "N/A",
+                usp: "N/A",
+                builtwith: "N/A",
+                features: "N/A",
+                purpose: "N/A",
+                location: "N/A",
+                activities: "N/A",
+                future: "N/A",
+                format: "1-day, 1-task coding streaks",
+                techfocus: "Web Dev, Android, AI mini tasks"
+            }
+        };
+
+        projectCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const projectId = card.dataset.project;
+                const details = projectDetails[projectId];
+
+                if (details) {
+                    document.getElementById('modal-project-title').textContent = details.title;
+                    modalProjectDescription.textContent = details.description; // Set initial description
+
+                    // Dynamically set content for all fields, hiding if N/A
+                    document.getElementById('modal-project-tech').closest('p').style.display = details.tech === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-tech').textContent = details.tech;
+
+                    document.getElementById('modal-project-goal').closest('p').style.display = details.goal === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-goal').textContent = details.goal;
+
+                    document.getElementById('modal-project-status').closest('p').style.display = details.status === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-status').textContent = details.status;
+
+                    document.getElementById('modal-project-tools').closest('p').style.display = details.tools === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-tools').textContent = details.tools;
+
+                    document.getElementById('modal-project-followers').closest('p').style.display = details.followers === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-followers').textContent = details.followers;
+
+                    document.getElementById('modal-project-usp').closest('p').style.display = details.usp === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-usp').textContent = details.usp;
+
+                    document.getElementById('modal-project-builtwith').closest('p').style.display = details.builtwith === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-builtwith').textContent = details.builtwith;
+
+                    document.getElementById('modal-project-features').closest('p').style.display = details.features === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-features').textContent = details.features;
+
+                    document.getElementById('modal-project-purpose').closest('p').style.display = details.purpose === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-purpose').textContent = details.purpose;
+
+                    document.getElementById('modal-project-location').closest('p').style.display = details.location === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-location').textContent = details.location;
+
+                    document.getElementById('modal-project-activities').closest('p').style.display = details.activities === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-activities').textContent = details.activities;
+
+                    document.getElementById('modal-project-future').closest('p').style.display = details.future === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-future').textContent = details.future;
+
+                    document.getElementById('modal-project-format').closest('p').style.display = details.format === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-format').textContent = details.format;
+
+                    document.getElementById('modal-project-techfocus').closest('p').style.display = details.techfocus === "N/A" ? 'none' : 'block';
+                    document.getElementById('modal-project-techfocus').textContent = details.techfocus;
+
+                    projectModal.classList.add('show');
+                }
+            });
+        });
+
+        modalCloseBtn.addEventListener('click', () => {
+            projectModal.classList.remove('show');
+        });
+
+        // Close modal when clicking outside
+        projectModal.addEventListener('click', (e) => {
+            if (e.target === projectModal) {
+                projectModal.classList.remove('show');
+            }
+        });
+
+
+    </script>
+</body>
+</html>
